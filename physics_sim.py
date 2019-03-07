@@ -95,9 +95,11 @@ class PhysicsSim():
         body_velocity = self.find_body_velocity()
         phi_dot, theta_dot = self.angular_v[0], self.angular_v[1]
         s_0 = np.array([0., 0., theta_dot * self.l_to_rotor])
-        s_1 = -s_0
+        # s_1 = -s_0
+        s_1 = np.negative(s_0)
         s_2 = np.array([0., 0., phi_dot * self.l_to_rotor])
-        s_3 = -s_2
+        # s_3 = -s_2
+        s_3 = np.negative(s_2)
         speeds = [s_0, s_1, s_2, s_3]
         for num in range(4):
             perpendicular_speed = speeds[num] + body_velocity
