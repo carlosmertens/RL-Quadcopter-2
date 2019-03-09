@@ -1,11 +1,18 @@
 import numpy as np
 from physics_sim import PhysicsSim
 
+
 class Task():
-    """Task (environment) that defines the goal and provides feedback to the agent."""
-    def __init__(self, init_pose=None, init_velocities=None, 
-        init_angle_velocities=None, runtime=5., target_pos=None):
+    """Task (environment) that defines the goal and provides feedback to the agent.
+    
+    The task for this enviroment is to initiate a zero position and to takeoff to as smooth as possible.
+    The goal is to reach position x=0, y=0 and Z(high)=10.
+    """
+    
+    
+    def __init__(self, runtime=20., target_pos=np.array([0., 0., 10.])):
         """Initialize a Task object.
+        
         Params
         ======
             init_pose: initial position of the quadcopter in (x,y,z) dimensions and the Euler angles
@@ -14,27 +21,44 @@ class Task():
             runtime: time limit for each episode
             target_pos: target/goal (x,y,z) position for the agent
         """
+        
+        # The quadcopter's starting position
+        self.init_pose = np.array([0., 0., 0., 0., 0., 0.])
+        self.init_velocities = np.array([0., 0., 0.])
+        self.init_angle_velocities = np.array([0., 0., 0.])
+        self.target_pos = target_pos
+        
         # Simulation
-        self.sim = PhysicsSim(init_pose, init_velocities, init_angle_velocities, runtime) 
+        self.sim = PhysicsSim(self.init_pose, self.init_velocities, self.init_angle_velocities, runtime) 
         self.action_repeat = 3
 
         self.state_size = self.action_repeat * 6
         self.action_low = 0
         self.action_high = 900
-        self.action_size = 4
+        self.action_size = 4 
 
-        # Goal
-        self.target_pos = target_pos if target_pos is not None else np.array([0., 0., 10.]) 
 
     def get_reward(self):
-        """Uses current pose of sim to return reward."""
-        reward = 1.-.3*(abs(self.sim.pose[:3] - self.target_pos)).sum()
+        """Uses current pose of sim to return reward.
+        
+        The agent will get rewarded according to best approximation to the each
+        coordinate x, y, z.
+        """
+        
+        reward_x = 1.-.3*(abs(self.sim.pose[0] - self.target_pos[0])).sum()
+        reward_y = 1.-.3*(abs(self.sim.pose[1] - self.target_pos[1])).sum()
+        reward_z = 1.-.3*(abs(self.sim.pose[2] - self.target_pos[2])).sum()
+        reward = reward_x + reward_y + reward_z
+        
         return reward
+
 
     def step(self, rotor_speeds):
         """Uses action to obtain next state, reward, done."""
+        
         reward = 0
         pose_all = []
+        
         for _ in range(self.action_repeat):
             done = self.sim.next_timestep(rotor_speeds) # update the sim pose and velocities
             reward += self.get_reward() 
@@ -42,8 +66,10 @@ class Task():
         next_state = np.concatenate(pose_all)
         return next_state, reward, done
 
+    
     def reset(self):
         """Reset the sim to start a new episode."""
+        
         self.sim.reset()
         state = np.concatenate([self.sim.pose] * self.action_repeat) 
         return state
