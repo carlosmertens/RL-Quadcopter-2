@@ -10,7 +10,7 @@ class Task():
     """
     
     
-    def __init__(self, runtime=20., target_pos=np.array([0., 0., 10.])):
+    def __init__(self, runtime=20., target_pos=np.array([0., 0., 50.])):
         """Initialize a Task object.
         
         Params
@@ -35,7 +35,9 @@ class Task():
         self.state_size = self.action_repeat * 6
         self.action_low = 0
         self.action_high = 900
-        self.action_size = 4 
+        self.action_size = 4
+        
+        self.accumulative_rewards = []
 
 
     def get_reward(self):
@@ -44,11 +46,13 @@ class Task():
         The agent will get rewarded according to best approximation to the each
         coordinate x, y, z.
         """
-        
-        reward_x = 1.-.3*(abs(self.sim.pose[0] - self.target_pos[0])).sum()
-        reward_y = 1.-.3*(abs(self.sim.pose[1] - self.target_pos[1])).sum()
-        reward_z = 1.-.3*(abs(self.sim.pose[2] - self.target_pos[2])).sum()
+        reward_x = 1.-.003*(abs(self.sim.pose[0] - self.target_pos[0]))
+        reward_y = 1.-.003*(abs(self.sim.pose[1] - self.target_pos[1]))
+        reward_z = 1.-.003*(abs(self.sim.pose[2] - self.target_pos[2]))
         reward = reward_x + reward_y + reward_z
+        
+        # TODO: To ensure the stability of the agent, try using reward clipping.
+        #  Reference: https://docs.scipy.org/doc/numpy-1.15.0/reference/generated/numpy.clip.html
         
         return reward
 
@@ -60,10 +64,14 @@ class Task():
         pose_all = []
         
         for _ in range(self.action_repeat):
-            done = self.sim.next_timestep(rotor_speeds) # update the sim pose and velocities
+            done = self.sim.next_timestep(rotor_speeds)  # update the sim pose and velocities
             reward += self.get_reward() 
             pose_all.append(self.sim.pose)
         next_state = np.concatenate(pose_all)
+        
+        self.accumulative_rewards.append(reward)  # to accumulate reward to be plot
+        #print(reward)
+        
         return next_state, reward, done
 
     
