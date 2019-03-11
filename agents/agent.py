@@ -36,13 +36,13 @@ class Agent:
         self.noise = OUNoise(self.action_size, self.exploration_mu, self.exploration_theta, self.exploration_sigma)
 
         # Replay Memory
-        self.buffer_size = 100000
-        self.batch_size = 64
+        self.buffer_size = 1000000
+        self.batch_size = 1024
         self.memory = ReplayBuffer(self.buffer_size, self.batch_size)
 
         # Algorithm parameters
-        self.gamma = 0.99  # discount factor
-        self.tau = 0.01  # for soft update of target parameters
+        self.gamma = 0.95  # discount factor
+        self.tau = 0.001  # for soft update of target parameters
 
         # Scores and rewards parameters
         self.best_score = -np.inf
@@ -50,6 +50,7 @@ class Agent:
         self.count = 0
         self.score = 0
         self.accumulative_scores = []  ########
+        #self.accumulative_rewards = []
         
 
     def reset_episode(self):
@@ -89,33 +90,26 @@ class Agent:
 
     
     def learn(self, experiences):
-        """Update policy and value parameters using given batch of experience
-        tuples."""
+        """Update policy and value parameters using given batch of experience tuples."""
 
         self.score = self.total_reward/float(self.count) if self.count else 0.0
         self.accumulative_scores.append(self.score)  #########
+        #self.accumulative_rewards.append(self.total_reward)
+        
         if self.score > self.best_score:
             self.best_score = self.score
 
         # Convert experience tuples to separate arrays for each element (states, actions, rewards, etc.)
         states = np.vstack([e.state for e in experiences if e is not None])
-        actions = np.vstack(
-            [e.action for e in experiences if e is not None]).astype(
-            np.float32).reshape(-1, self.action_size)
-        rewards = np.vstack(
-            [e.reward for e in experiences if e is not None]).astype(
-            np.float32).reshape(-1, 1)
-        dones = np.vstack(
-            [e.done for e in experiences if e is not None]).astype(
-            np.uint8).reshape(-1, 1)
-        next_states = np.vstack(
-            [e.next_state for e in experiences if e is not None])
+        actions = np.vstack([e.action for e in experiences if e is not None]).astype(np.float32).reshape(-1, self.action_size)
+        rewards = np.vstack([e.reward for e in experiences if e is not None]).astype(np.float32).reshape(-1, 1)
+        dones = np.vstack([e.done for e in experiences if e is not None]).astype(np.uint8).reshape(-1, 1)
+        next_states = np.vstack([e.next_state for e in experiences if e is not None])
 
         # Get predicted next-state actions and Q values from target models
         # Q_targets_next = critic_target(next_state, actor_target(next_state))
         next_actions = self.actor_target.model.predict_on_batch(next_states)
-        Q_targets_next = self.critic_target.model.predict_on_batch(
-            [next_states, next_actions])
+        Q_targets_next = self.critic_target.model.predict_on_batch([next_states, next_actions])
 
         # Compute Q targets for current states and train critic model (local)
         Q_targets = rewards + self.gamma * Q_targets_next * (1 - dones)
@@ -137,10 +131,8 @@ class Agent:
         local_weights = np.array(local_model.get_weights())
         target_weights = np.array(target_model.get_weights())
 
-        assert len(local_weights) == len(
-            target_weights), "Local and target model parameters must \
-            have the same size"
+        assert len(local_weights) == len(target_weights), "Local and target model parameters must have the same size"
 
         new_weights = self.tau*local_weights + (1-self.tau)*target_weights
-
         target_model.set_weights(new_weights)
+        
