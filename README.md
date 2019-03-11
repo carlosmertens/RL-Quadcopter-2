@@ -3,7 +3,7 @@
 
 ### Description
 
-Welcome to the Deep Reinforcement Learning project! In this project, we will demostrate how to build a pipeline to process a deep reinforcement agent which task or goal will be to learn how to flight a quadcopter. 
+Welcome to the Deep Reinforcement Learning project! In this project, we will demostrate how to build a pipeline to process a deep reinforcement agent which task or goal will be to learn how to flight a quadcopter. We would implement a Deep Deterministic Policy Gradients or DDPG algorithm. (Actor-Critic Method) 
 
 The Quadcopter or Quadrotor Helicopter is becoming an increasingly popular aircraft for both personal and professional use. Its maneuverability lends itself to many applications, from last-mile delivery to cinematography, from acrobatics to search-and-rescue.
 
