@@ -34,9 +34,9 @@ class Actor:
         states = layers.Input(shape=(self.state_size,), name='states')
 
         # Add hidden layers
-        net = layers.Dense(units=32, activation='relu')(states)
-        net = layers.Dense(units=64, activation='relu')(net)
-        net = layers.Dense(units=32, activation='relu')(net)
+        net = layers.Dense(units=900, activation='relu')(states)
+        net = layers.Dense(units=600, activation='relu')(net)
+        net = layers.Dense(units=300, activation='relu')(net)
 
         # TODO: Try different layer sizes, activations, add batch normalization, regularizers, etc.
 
@@ -53,7 +53,7 @@ class Actor:
         action_gradients = layers.Input(shape=(self.action_size,))
         loss = K.mean(-action_gradients * actions)
 
-        # TODO: Incorporate any additional losses here (e.g. from regularizers)
+        # TODO: Incorporate any additional losses here (e.g. from regularizes)
 
         # Define optimizer and training function
         optimizer = optimizers.Adam()
