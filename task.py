@@ -5,12 +5,12 @@ from physics_sim import PhysicsSim
 class Task():
     """Task (environment) that defines the goal and provides feedback to the agent.
     
-    The task for this enviroment is to initiate a zero position and to takeoff to as smooth as possible.
+    The task for this environment is to initiate a zero position and to takeoff to as smooth as possible.
     The goal is to reach position x=0, y=0 and Z(high)=10.
     """
     
     
-    def __init__(self, runtime=20., target_pos=np.array([0., 0., 50.])):
+    def __init__(self, runtime=100., target_pos=np.array([0., 0., 50.])):
         """Initialize a Task object.
         
         Params
